@@ -32,18 +32,33 @@ export default class Carryable implements Extension {
     return this.state;
   }
 
+  // Bugfix wall entity collision detection:
+  // ToDo: check Implement merge strategy for item states
+
   public pickup(entityId: string, options?: PickupOptions): boolean {
+    console.log("[Carryable] Attempting to pick up entity", {
+      entityId,
+      itemType: this.itemType,
+      currentState: this.state,
+    });
+
     const entity = this.self.getEntityManager().getEntityById(entityId);
     if (!entity) {
+      console.log("[Carryable] Entity with ID not found:", entityId);
       return false;
     }
-
+    
     const inventory = entity.getExt(Inventory);
 
-    if (inventory.isFull() && !options?.mergeStrategy) {
+    if (!inventory) {
+      console.log("[Carryable] Target entity does not have an Inventory extension:", entityId);
       return false;
     }
 
+    if (inventory.isFull() && !options?.mergeStrategy) {
+      console.log("[Carryable] Inventory is full, cannot pick up item.");
+      return false;
+    }
     // If we have a merge strategy and existing item, merge instead of adding new
     if (options?.mergeStrategy) {
       const existingItemIndex = inventory
@@ -51,18 +66,28 @@ export default class Carryable implements Extension {
         .findIndex((item) => item.itemType === this.itemType);
       if (existingItemIndex >= 0) {
         const existingItem = inventory.getItems()[existingItemIndex];
-        const newState = options.mergeStrategy(existingItem.state, options.state);
-        inventory.updateItemState(existingItemIndex, newState);
-        this.self.getEntityManager().markEntityForRemoval(this.self);
-        return true;
+        console.log("[Carryable] Found existing item in inventory:", existingItem);
+        //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+        // <<< ToDo: Bugfix wall entity Seems issue with state >>>>>>>>>>>>>>>>>>>>
+        if (existingItem.state !== undefined && options.state !== undefined) {
+          const newState = options.mergeStrategy(existingItem.state, options.state);
+          console.log("[Carryable] Merging item states:", { existingState: existingItem.state, newState });
+          inventory.updateItemState(existingItemIndex, newState);
+          this.self.getEntityManager().markEntityForRemoval(this.self);
+          return true;
+        }
       }
     }
-
     // Otherwise add as new item
     if (inventory.isFull()) {
+      console.log("[Carryable] Inventory is still full after merge strategy check.");
       return false;
     }
 
+    console.log("[Carryable] Adding new item to inventory:", {
+      itemType: this.itemType,
+      state: options?.state,
+    });
     inventory.addItem({
       itemType: this.itemType,
       state: options?.state,
@@ -80,6 +105,7 @@ export default class Carryable implements Extension {
         })
       );
 
+    console.log("[Carryable] Successfully picked up item.");
     return true;
   }
 

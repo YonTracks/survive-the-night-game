@@ -311,6 +311,7 @@ export class Player extends Entity {
       const entities = this.getEntityManager()
         .getNearbyEntities(this.getCenterPosition())
         .filter((entity) => {
+          console.log("Interacting:", entity);
           return entity.hasExt(Interactive);
         });
 
