@@ -32,9 +32,6 @@ export default class Carryable implements Extension {
     return this.state;
   }
 
-  // Bugfix wall entity collision detection:
-  // ToDo: check Implement merge strategy for item states
-
   public pickup(entityId: string, options?: PickupOptions): boolean {
     console.log("[Carryable] Attempting to pick up entity", {
       entityId,
@@ -68,7 +65,7 @@ export default class Carryable implements Extension {
         const existingItem = inventory.getItems()[existingItemIndex];
         console.log("[Carryable] Found existing item in inventory:", existingItem);
         //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-        // <<< ToDo: Bugfix wall entity Seems issue with state >>>>>>>>>>>>>>>>>>>>
+        // <<< ToDo: Bugfix, Seems issue with state >>>>>>>>>>>>>>>>>>>>
         if (existingItem.state !== undefined && options.state !== undefined) {
           const newState = options.mergeStrategy(existingItem.state, options.state);
           console.log("[Carryable] Merging item states:", { existingState: existingItem.state, newState });
