@@ -25,6 +25,7 @@ export const ServerSentEvents = {
   PLAYER_REVIVED: "PLAYER_REVIVED",
   PONG: "pong",
   CHAT_MESSAGE: "chatMessage",
+  EXPLOSION: "explosion",
 } as const;
 
 export const ClientSentEvents = {
